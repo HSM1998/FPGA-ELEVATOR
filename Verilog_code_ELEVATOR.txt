@@ -1,0 +1,179 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 03/29/2019 02:54:07 PM
+// Design Name: 
+// Module Name: ELEVATOR
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module ELEVATOR(
+    input [1:0] UD,
+    input CLK,
+    output STEP,
+    output reg DIR,
+    output reg [1:0] LN,
+    output reg[1:0]  LP
+    );
+    reg x = 1'b1;
+    reg[27:0] counter=28'd0;
+    //parameter DIVISOR = 28'd500000000;
+    parameter DIVISOR = 28'd200000;
+    reg[27:0] count = 28'd0;
+    reg[27:0] num = 28'd0;
+    reg [1:0]PS = 2'b00;
+    reg [1:0]NS = 2'b00;
+     parameter F = 28'd2000, S = 28'd4000, T = 28'd6000;
+     
+    
+always@( posedge CLK)
+begin    
+//GROUND FLOUR
+if(UD == 2'b00)
+begin
+NS <= 2'b00;
+if(PS == 2'b00)
+begin
+DIR <= 1'b1;
+end
+else if(PS == 2'b01)
+begin
+DIR <= 1'b0;
+num<=F;
+end
+else if(PS == 2'b10)
+begin
+DIR <= 1'b0;
+num<=S;
+end
+else
+begin
+DIR <= 1'b0;
+num<=T;              
+end
+
+end
+                
+                
+                
+//FIRST FLOUR
+else if(UD == 2'b01)
+begin
+NS <= 2'b01;
+if(PS == 2'b00)
+begin
+DIR <= 1'b1;
+num<=F;
+end
+else if(PS == 2'b01)
+begin
+DIR <= 1'b1;
+end
+else if(PS == 2'b10)
+begin
+DIR <= 1'b0;
+num<=F;
+end
+else
+begin
+DIR <= 1'b0;
+num<=S;            
+end  
+
+end
+                                
+                                
+//SECOND FLOUR
+else if(UD == 2'b10)
+begin
+NS <=2'b10;
+if(PS == 2'b00)
+begin
+DIR <= 1'b1;
+num<=S;
+end
+else if(PS == 2'b01)
+begin
+DIR <= 1'b1;
+num<=F;
+end
+else if(PS == 2'b10)
+begin
+DIR <= 1'b1;
+end
+else
+begin
+DIR <= 1'b0;
+num<=F;             
+end
+
+end
+                                                
+                                                
+//THIRD FLOUR
+else  if(UD == 2'b11)
+begin
+NS <=2'b11;
+if(PS == 2'b00)
+begin
+DIR <= 1'b1;
+num<=T;
+end
+else if(PS == 2'b01)
+begin
+DIR <= 1'b1;
+num<=S;
+end
+else if(PS == 2'b10)
+begin
+DIR <= 1'b1;
+num<=F;
+end
+else
+begin
+DIR <= 1'b1;           
+end
+
+end
+end
+
+always @(posedge CLK)
+begin
+LN<=NS; 
+LP<=PS;
+if(PS==NS)
+x<=1'b0;
+else
+x<=1'b1;
+ counter <= counter + 28'd1;
+ if(counter>=(DIVISOR-1))
+  counter <= 28'd0;
+end
+
+
+
+always@(posedge STEP)
+begin
+ count <= count + 28'd1;
+ if(count>=num)
+ begin
+  PS<=NS;
+   count <= 28'd0;
+   end
+end
+
+assign STEP = (x==1)?((counter<DIVISOR/2)?1'b0:1'b1):((counter<DIVISOR/2)?1'b0:1'b0);
+endmodule
